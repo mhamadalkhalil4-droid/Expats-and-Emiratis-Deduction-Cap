@@ -1160,18 +1160,12 @@ const currentMonth = 'February 2026';
 const nextMonth    = 'March 2026';
 
 let emps = [
-  { name:'Mohammed Al Naqbi', salary:10000, loansDed:1200, mgrDed:800,
+  { name:'Mohammed Al Naqbi', salary:10000, loansDed:1200, mgrDed:800, deferred:300,
     monthlyRepayment:1200, sched:[{m:'March 2026',a:1200},{m:'April 2026',a:900},{m:'May 2026',a:600}] },
-  { name:'Aisha Al Marri',    salary:8000,  loansDed:1000, mgrDed:500,
+  { name:'Aisha Al Marri',    salary:8000,  loansDed:1000, mgrDed:500, deferred:0,
     monthlyRepayment:1000, sched:[{m:'March 2026',a:1000},{m:'April 2026',a:400}] },
-  { name:'Rashed Al Falasi',  salary:12000, loansDed:1500, mgrDed:700,
+  { name:'Rashed Al Falasi',  salary:12000, loansDed:1500, mgrDed:700, deferred:0,
     monthlyRepayment:1500, sched:[{m:'March 2026',a:1500},{m:'April 2026',a:1500}] },
-];
-let deferred = [
-  { emp:'Mohammed Al Naqbi', payrollMonth:'December 2025', original:800,
-    notDeducted:200, scheduledFor:'January 2026',  status:'Deducted'  },
-  { emp:'Mohammed Al Naqbi', payrollMonth:'January 2026',  original:900,
-    notDeducted:300, scheduledFor:'February 2026', status:'Scheduled' },
 ];
 let loansPageEmp = 0;
 let openIdx = null;
@@ -1216,12 +1210,10 @@ function renderLoans(){
   const e = emps[loansPageEmp];
   const nm = document.getElementById('loansEmpName'); if(nm) nm.textContent = e.name;
   const cv = document.getElementById('loansDeductionCapValue'); if(cv) cv.textContent = capOf(e);
-  // Running balance: only deferrals still waiting to be taken. Taken ones drop out.
-  const outstanding = deferred
-    .filter(r => r.emp === e.name && r.status === 'Scheduled')
-    .reduce((t,r) => t + r.notDeducted, 0);
+  // One running total per employee. The previous amount is absorbed into the next
+  // month's Manager Notes figure, so a fresh reduction replaces it rather than adding to it.
   const df = document.getElementById('loansDeferredTotal');
-  if(df) df.textContent = Math.round(outstanding).toLocaleString();
+  if(df) df.textContent = Math.round(e.deferred || 0).toLocaleString();
 }
 
 function renderAuditRow(){
@@ -1350,8 +1342,7 @@ function saveReduce(){
   const lr=e._origLoans-loans, mr=e._origMgr-mgr;
   if(lr>0) pushLoanForward(e, lr);
   if(mr>0){
-    deferred.push({ emp:e.name, payrollMonth:currentMonth, original:e._origMgr,
-                    notDeducted:mr, scheduledFor:nextMonth, status:'Scheduled' });
+    e.deferred = mr;                 // replaces the old total, never adds to it
     loansPageEmp = emps.indexOf(e);
   }
   e.loansDed=loans; e.mgrDed=mgr;
