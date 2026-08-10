@@ -496,8 +496,8 @@
       <span data-type="TEXT" class="absolute top-[94px] left-[25px] z-[1] whitespace-pre text-[#565D6D]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">Total Outstanding Balance:</span>
       <span data-type="TEXT" class="absolute top-[94px] left-[388px] z-[3] whitespace-pre text-[#565D6D]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">Currency:</span>
       <span data-type="TEXT" class="absolute top-[94px] left-[602px] z-[6] whitespace-pre text-[#565D6D]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">Deduction CAP (Emirati):</span>
-      <span data-type="TEXT" class="absolute top-[94px] left-[955px] z-[7] whitespace-pre text-[#565D6D]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">Deferred Deductions:</span>
-      <div data-type="CONTAINER" class="w-[120px] h-[42px] absolute top-[85px] left-[1150px] z-[8] bg-[#f3f4f6]/[0.2] rounded-[6px] opacity-[1]">
+      <span id="loansDeferredLabel" data-type="TEXT" class="absolute top-[94px] left-[955px] z-[7] whitespace-pre text-[#565D6D]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">Deferred Deductions:</span>
+      <div id="loansDeferredBox" data-type="CONTAINER" class="w-[120px] h-[42px] absolute top-[85px] left-[1150px] z-[8] bg-[#f3f4f6]/[0.2] rounded-[6px] opacity-[1]">
         <div data-role="CONTAINER_CHILDREN_WRAPPER" class="relative z-[0] w-full h-full rounded-[inherit]">
           <span id="loansDeferredTotal" data-type="TEXT" class="absolute top-[9px] left-[13px] z-[0] whitespace-pre text-[#171a1f]/[1] font-[Inter] text-[16px] leading-[24px] font-[400] text-left tracking-[0px] opacity-[1]">0</span>
         </div>
@@ -1212,8 +1212,15 @@ function renderLoans(){
   const cv = document.getElementById('loansDeductionCapValue'); if(cv) cv.textContent = capOf(e);
   // One running total per employee. The previous amount is absorbed into the next
   // month's Manager Notes figure, so a fresh reduction replaces it rather than adding to it.
-  const df = document.getElementById('loansDeferredTotal');
-  if(df) df.textContent = Math.round(e.deferred || 0).toLocaleString();
+  // Hidden entirely when nothing is owed. Both elements are absolutely positioned, so the
+  // surrounding fields keep their places and the space is simply left blank.
+  const owed = Math.round(e.deferred || 0);
+  const df  = document.getElementById('loansDeferredTotal');
+  const lbl = document.getElementById('loansDeferredLabel');
+  const box = document.getElementById('loansDeferredBox');
+  if(df) df.textContent = owed.toLocaleString();
+  if(lbl) lbl.style.display = owed > 0 ? '' : 'none';
+  if(box) box.style.display = owed > 0 ? '' : 'none';
 }
 
 function renderAuditRow(){
